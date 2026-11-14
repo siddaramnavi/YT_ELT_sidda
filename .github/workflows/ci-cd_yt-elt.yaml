@@ -83,6 +83,7 @@ jobs:
         uses: tj-actions/changed-files@v45
         with:
           files: |
+            .github/workflows/**
             dags/**
             include/**
             tests/**
@@ -118,9 +119,14 @@ jobs:
           CHANNEL_HANDLE=${CHANNEL_HANDLE}
           EOF
 
+
       - name: Start Docker Compose
         if: steps.changed-files-tests.outputs.any_changed == 'true'
         run: docker compose up -d --wait
+
+      - name: Show PostgreSQL logs if startup fails
+        if: failure() && steps.changed-files-tests.outputs.any_changed == 'true'
+        run: docker compose logs postgres
 
       - name: Run Unit and Integration Tests
         if: steps.changed-files-tests.outputs.any_changed == 'true'
